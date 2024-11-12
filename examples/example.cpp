@@ -3,7 +3,7 @@
 
 int main()
 {
-    bpr::prng::Xoshiro256Star e;
+    bpr::prng::Xoshiro256ss e;
     auto s = bpr::sequence(e, 0.1, 0.2, 1000);
     for (auto v : s) std::cout << v << std::endl;
 }

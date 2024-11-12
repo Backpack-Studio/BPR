@@ -5,10 +5,11 @@
 ## Features
 
 - **PRNG Implementations**:
-  - `Xorshift128+`
   - `Xoroshiro128+`
   - `Xoroshiro128++`
-  - `Xoshiro256*`
+  - `Xoroshiro128**`
+  - `Xoshiro256+`
+  - `Xoshiro256++`
   - `Xoshiro256**`
   - `PCG32`
 
@@ -71,14 +72,14 @@ BPR is header-only and does not require building. To integrate BPR into your pro
 ## Usage
 
 ### Basic Example
-Here's a basic example using the `Xoshiro256Star` PRNG to generate a sequence of random numbers:
+Here's a basic example using the `Xoshiro256**` PRNG to generate a sequence of random numbers:
 
 ```cpp
 #include <BPR/BPR.hpp>
 #include <iostream>
 
 int main() {
-    bpr::prng::Xoshiro256Star engine;
+    bpr::prng::Xoshiro256ss engine;
     auto sequence = bpr::sequence(engine, 0.1, 0.2, 1000);
     for (auto value : sequence) {
         std::cout << value << std::endl;
@@ -94,7 +95,7 @@ To generate a single random number of a specific type:
 #include <BPR/BPR.hpp>
 
 int main() {
-    bpr::prng::Xorshift128Plus engine;
+    bpr::prng::Xorshift128p engine;
     int random_int = bpr::rand<int>(engine);                // Float in range [int min, int max]
     double random_double = bpr::rand<double>(engine);       // Float in range [0.0, 1.0]
 
