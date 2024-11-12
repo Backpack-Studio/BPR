@@ -69,18 +69,19 @@ public:
 
 /**
  * @class Xoroshiro128Plus
- * @brief A high-quality PRNG based on the Xoroshiro128Plus algorithm, a faster version of xorshift.
+ * @brief A high-quality PRNG based on the Xoroshiro128Plus algorithm, a faster alternative to xorshift.
  * 
- * Xoroshiro128Plus offers better randomness properties than Xorshift128Plus, while still maintaining high performance.
- * It is a good choice for simulations, games, and non-cryptographic applications where quality random numbers are required.
+ * Xoroshiro128Plus provides improved randomness properties compared to Xorshift128Plus, while maintaining
+ * exceptional performance. This generator is particularly suited for simulations, games, and applications
+ * that need high-quality random numbers, though it is not suitable for cryptographic use.
  * 
  * @note Strengths:
- * - High quality random numbers with better statistical properties than Xorshift128Plus.
- * - Very fast and efficient.
+ * - Generates high-quality random numbers with better statistical properties than Xorshift128Plus.
+ * - Extremely fast and efficient.
  * 
  * @note Weaknesses:
- * - Not suitable for cryptography.
- * - Slightly more complex than Xorshift128Plus.
+ * - Not suitable for cryptographic applications.
+ * - Slightly more complex than Xorshift128Plus in terms of implementation.
  * 
  * @see Xoroshiro128+ (https://en.wikipedia.org/wiki/Xorshift#xoroshiro)
  */
@@ -106,11 +107,50 @@ public:
 };
 
 /**
+ * @class Xoroshiro128PlusPlus
+ * @brief A high-quality PRNG based on the Xoroshiro128PlusPlus algorithm, providing even better statistical properties than Xoroshiro128Plus.
+ * 
+ * Xoroshiro128PlusPlus is an improved variant of the Xoroshiro128Plus algorithm, known for its "rotation addition"
+ * output which enhances randomness quality. This PRNG is well-suited for simulations, games, and applications
+ * where random numbers of higher quality are required. Note that it remains unsuitable for cryptographic use.
+ * 
+ * @note Strengths:
+ * - Enhanced statistical properties compared to Xoroshiro128Plus.
+ * - Extremely fast, with slightly more robust distribution characteristics.
+ * 
+ * @note Weaknesses:
+ * - Not cryptographically secure.
+ * - A bit more computationally intensive due to additional rotations.
+ * 
+ * @see Xoroshiro128++ (https://en.wikipedia.org/wiki/Xorshift#xoroshiro)
+ */
+class Xoroshiro128PlusPlus : public IEngine<uint64_t, 2>
+{
+public:
+    explicit constexpr Xoroshiro128PlusPlus(uint64_t seed = compile_time()) noexcept
+        : IEngine({
+            splitmix64(seed),
+            splitmix64(seed + 1)
+        })
+    { }
+
+    constexpr uint64_t next() noexcept override {
+        uint64_t s0 = m_state[0];
+        uint64_t s1 = m_state[1];
+        uint64_t result = rotl(s0 + s1, 17) + s0;
+        s1 ^= s0;
+        m_state[0] = rotl(s0, 49) ^ s1 ^ (s1 << 21);
+        m_state[1] = rotl(s1, 28);
+        return result;
+    }
+};
+
+/**
  * @class Xoshiro256Star
  * @brief A fast, high-quality PRNG based on the Xoshiro256Star algorithm.
  * 
- * Xoshiro256Star is part of the Xoshiro family of PRNGs and offers excellent randomness properties with very good performance.
- * It is well-suited for applications that require high-quality random numbers for large-scale simulations or gaming.
+ * Xoshiro256Star is part of the Xoshiro family of PRNGs and provides excellent randomness properties with very good performance.
+ * It is well-suited for applications that require high-quality random numbers, such as large-scale simulations or gaming.
  * 
  * @note Strengths:
  * - Very high-quality random numbers with excellent statistical properties.
@@ -127,6 +167,49 @@ class Xoshiro256Star : public IEngine<uint64_t, 4>
 {
 public:
     explicit constexpr Xoshiro256Star(uint64_t seed = compile_time()) noexcept
+        : IEngine({
+            splitmix64(seed),
+            splitmix64(seed + 1),
+            splitmix64(seed + 2),
+            splitmix64(seed + 3)
+        })
+    { }
+
+    constexpr uint64_t next() noexcept override {
+        const uint64_t result = m_state[1] * 0x9E3779B97F4A7C13;
+        const uint64_t t = m_state[1] << 17;
+        m_state[2] ^= m_state[0];
+        m_state[3] ^= m_state[1];
+        m_state[1] ^= m_state[2];
+        m_state[0] ^= m_state[3];
+        m_state[2] ^= t;
+        m_state[3] = rotl(m_state[3], 45);
+        return result;
+    }
+};
+
+/**
+ * @class Xoshiro256StarStar
+ * @brief A high-quality PRNG based on the Xoshiro256StarStar algorithm, an enhanced variant of Xoshiro256Star.
+ * 
+ * Xoshiro256StarStar is an advanced version of Xoshiro256Star with additional transformations, providing even better statistical properties.
+ * It is designed for applications that need very high-quality random numbers for demanding simulations or gaming.
+ * 
+ * @note Strengths:
+ * - Superior randomness properties compared to Xoshiro256Star.
+ * - Very high performance and efficiency.
+ * - Ideal for large-scale applications and simulations that require high-quality randomness.
+ * 
+ * @note Weaknesses:
+ * - More complex than Xoshiro256Star and may require more computational resources.
+ * - Not suitable for cryptographic applications.
+ * 
+ * @see Xoshiro256 (https://en.wikipedia.org/wiki/Xorshift#xoshiro)
+ */
+class Xoshiro256StarStar : public IEngine<uint64_t, 4>
+{
+public:
+    explicit constexpr Xoshiro256StarStar(uint64_t seed = compile_time()) noexcept
         : IEngine({
             splitmix64(seed),
             splitmix64(seed + 1),
